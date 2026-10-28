@@ -10,7 +10,7 @@ import { gsap } from 'gsap';
 import { TITLE, VIEW_ORDER } from './config.js';
 import { languages } from './data.js';
 import { compact } from './format.js';
-import { openPanel } from './panel.js';
+import { openPanel, closePanel } from './panel.js';
 import { createStepper } from './stepper.js';
 import { transition, prefersReducedMotion } from './transition.js';
 import { sameCountDifferentLabel } from './discoveries.js';
@@ -21,7 +21,8 @@ const VIEWS = { speakers, status };
 
 const stage = document.getElementById('stage');
 const callout = document.getElementById('callout');
-const state = { view: null, selected: null };
+// viewing: the language open in the panel. tracked: the one followed through every view.
+const state = { view: null, viewing: null, tracked: null };
 
 // One button per language, created once and moved between views.
 const els = new Map(
@@ -46,11 +47,28 @@ const DISCOVERIES = {
   status: sameCountDifferentLabel(languages),
 };
 
-function select(id) {
-  if (state.selected) els.get(state.selected).classList.remove('is-selected');
-  state.selected = id;
-  els.get(id).classList.add('is-selected');
-  openPanel(byId.get(id));
+function view(id) {
+  if (state.viewing) els.get(state.viewing).classList.remove('is-viewing');
+  state.viewing = id;
+  els.get(id).classList.add('is-viewing');
+  openPanel(byId.get(id), {
+    tracked: state.tracked === id,
+    onTrack: () => {
+      setTracked(state.tracked === id ? null : id);
+      closePanel();
+    },
+    onClosed: () => {
+      els.get(id).classList.remove('is-viewing');
+      if (state.viewing === id) state.viewing = null;
+    },
+  });
+}
+
+function setTracked(id) {
+  if (state.tracked) els.get(state.tracked).classList.remove('is-tracked');
+  state.tracked = id;
+  if (id) els.get(id).classList.add('is-tracked');
+  stepper.track(id ? byId.get(id).name : null);
 }
 
 function hideDiscovery() {
@@ -68,11 +86,29 @@ function showDiscovery(view) {
   if (!prefersReducedMotion()) gsap.from(callout, { y: 16, opacity: 0, duration: 0.4, ease: 'power2.out' });
 }
 
-// Where to land after a view change: the selected name if there is one, otherwise the top of the stage.
-function scrollTarget() {
-  const el = state.selected && els.get(state.selected);
-  if (el) return el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.4;
-  return stage.getBoundingClientRect().top + window.scrollY - 16;
+// Views have different heights. The stage is held at its old height while names move,
+// then eased to the new height, so the page never jumps out from under the reader.
+function holdHeight() {
+  gsap.killTweensOf(stage);
+  stage.style.minHeight = `${stage.offsetHeight}px`;
+}
+
+function naturalHeight() {
+  const last = stage.lastElementChild;
+  return last ? last.getBoundingClientRect().bottom - stage.getBoundingClientRect().top : 0;
+}
+
+// The furthest the page can scroll once the stage settles at its natural height.
+function settledMaxScroll() {
+  const doc = document.documentElement.scrollHeight - stage.offsetHeight + naturalHeight();
+  return Math.max(0, doc - window.innerHeight);
+}
+
+function releaseHeight() {
+  const natural = naturalHeight();
+  const clear = () => (stage.style.minHeight = '');
+  if (natural >= stage.offsetHeight || prefersReducedMotion()) return clear();
+  gsap.to(stage, { minHeight: natural, duration: 0.45, ease: 'power2.out', onComplete: clear });
 }
 
 function showView(id) {
@@ -82,24 +118,32 @@ function showView(id) {
   hideDiscovery();
   stepper.sync(VIEWS[id].question);
 
-  const change = () => {
-    VIEWS[id].layout(stage, languages, els);
-    if (!first) window.scrollTo({ top: Math.max(0, scrollTarget()), behavior: 'instant' });
-  };
+  const change = () => VIEWS[id].layout(stage, languages, els);
 
   if (first) {
     change();
     return;
   }
 
-  transition(names, change, () => {
-    if (state.view === id) showDiscovery(id);
-  });
+  // Without a tracked language the page stays where the reader left it and only the names move.
+  // With one, the page scrolls with it, more slowly, so the eye can follow it to its new place.
+  const followEl = state.tracked ? els.get(state.tracked) : null;
+  const duration = followEl ? 1.3 : 0.85;
+  holdHeight();
+  transition(
+    names,
+    change,
+    () => {
+      releaseHeight();
+      if (state.view === id) showDiscovery(id);
+    },
+    { duration, followEl, maxScroll: settledMaxScroll },
+  );
   if (!prefersReducedMotion()) {
     gsap.from(stage.querySelectorAll('.band__head, .group__head, .country__name'), {
       opacity: 0,
       duration: 0.4,
-      delay: 0.45,
+      delay: duration * 0.55,
     });
   }
 }
@@ -119,7 +163,7 @@ document.getElementById('footer').textContent =
 
 stage.addEventListener('click', (e) => {
   const btn = e.target.closest('.name');
-  if (btn) select(btn.dataset.id);
+  if (btn) view(btn.dataset.id);
 });
 callout.querySelector('.callout__close').addEventListener('click', hideDiscovery);
 

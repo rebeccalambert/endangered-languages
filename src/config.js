@@ -30,5 +30,4 @@ export const VIEW_ORDER = [
   { id: 'speakers', label: 'Speakers' },
   { id: 'status', label: 'Status' },
   { id: 'family', label: 'Family' },
-  { id: 'place', label: 'Place' },
 ];

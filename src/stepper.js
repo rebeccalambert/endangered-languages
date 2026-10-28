@@ -20,6 +20,8 @@ export function createStepper({ order, isBuilt, onGo }) {
   const nav = document.getElementById('stepper');
   const strip = nav.querySelector('.stepper__strip');
   const question = nav.querySelector('.stepper__question');
+  const tracked = nav.querySelector('.stepper__tracked');
+  const trackedName = tracked.querySelector('.stepper__tracked-name');
   const prev = nav.querySelector('[data-dir="-1"]');
   const next = nav.querySelector('[data-dir="1"]');
   let index = 0;
@@ -62,12 +64,22 @@ export function createStepper({ order, isBuilt, onGo }) {
     onGo(order[i].id);
   }
 
+  // Keep page padding and the callout clear of the stepper as its height changes.
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--stepper-h', `${nav.offsetHeight}px`);
+  }).observe(nav);
+
   prev.addEventListener('click', () => go(index - 1));
   next.addEventListener('click', () => go(index + 1));
   renderStrip();
 
   return {
     sync,
+    // Shows the tracked language under the question, or hides the line.
+    track(name) {
+      trackedName.textContent = name ?? '';
+      tracked.hidden = !name;
+    },
     // Called when the closing line is reached.
     unlock() {
       if (unlocked) return;

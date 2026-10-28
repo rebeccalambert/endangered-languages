@@ -6,6 +6,7 @@ const dialog = document.getElementById('panel');
 const body = dialog.querySelector('.panel__body');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = window.matchMedia('(min-width: 768px)');
+let onClose = null;
 
 // Bottom sheet on phones, side card on wider screens.
 const offscreen = () => (desktop.matches ? { xPercent: 105 } : { yPercent: 105 });
@@ -14,7 +15,9 @@ function row(label, value) {
   return `<div class="panel__row"><dt>${label}</dt><dd>${value}</dd></div>`;
 }
 
-export function openPanel(lang) {
+// `tracked`: whether this language is the one being followed through the views.
+// `onTrack`: toggles tracking. `onClosed`: runs once the panel has closed, however it was closed.
+export function openPanel(lang, { tracked, onTrack, onClosed }) {
   const band = BANDS.find((b) => b.id === lang.band);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -28,7 +31,12 @@ export function openPanel(lang) {
       ${row('Country', esc(lang.country))}
       ${row('Region', esc(lang.region))}
       ${row('Coordinates', coord(lang.latitude, lang.longitude))}
-    </dl>`;
+    </dl>
+    <button type="button" class="panel__track${tracked ? ' is-tracked' : ''}" aria-pressed="${tracked}">
+      ${tracked ? 'Stop tracking' : 'Track this language'}
+    </button>`;
+  body.querySelector('.panel__track').addEventListener('click', onTrack);
+  onClose = onClosed;
 
   const wasOpen = dialog.open;
   if (!wasOpen) dialog.showModal();
@@ -40,13 +48,21 @@ export function openPanel(lang) {
   }
 }
 
+// Every way of closing (button, Esc, backdrop, Track) ends here, so clean-up runs exactly once.
+// It doesn't wait for the dialog's own "close" event, which can arrive late.
+function finishClose() {
+  dialog.close();
+  const done = onClose;
+  onClose = null;
+  done?.();
+}
+
 export function closePanel() {
   if (!dialog.open) return;
   gsap.killTweensOf(dialog);
-  if (reduceMotion.matches) return dialog.close();
-  gsap.to(dialog, { ...offscreen(), duration: 0.3, ease: 'power2.in', onComplete: () => dialog.close() });
+  if (reduceMotion.matches) return finishClose();
+  gsap.to(dialog, { ...offscreen(), duration: 0.3, ease: 'power2.in', onComplete: finishClose });
 }
-
 dialog.querySelector('.panel__close').addEventListener('click', closePanel);
 // Esc: animate out instead of the instant native close.
 dialog.addEventListener('cancel', (e) => {

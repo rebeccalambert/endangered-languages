@@ -24,7 +24,10 @@
       <ol class="stepper__strip"></ol>
       <div class="stepper__row">
         <button type="button" class="stepper__arrow" data-dir="-1" aria-label="Previous question"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
-        <p class="stepper__question" aria-live="polite"></p>
+        <div class="stepper__middle">
+          <p class="stepper__question" aria-live="polite"></p>
+          <p class="stepper__tracked" aria-live="polite" hidden>Tracking <span class="stepper__tracked-name"></span></p>
+        </div>
         <button type="button" class="stepper__arrow" data-dir="1" aria-label="Next question"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
       </div>
     </nav>
