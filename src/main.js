@@ -13,11 +13,14 @@ import { compact } from './format.js';
 import { openPanel, closePanel } from './panel.js';
 import { createStepper } from './stepper.js';
 import { transition, prefersReducedMotion } from './transition.js';
-import { sameCountDifferentLabel } from './discoveries.js';
+import { closerToAnotherLabel, isolates } from './discoveries.js';
 import * as speakers from './views/speakers.js';
 import * as status from './views/status.js';
+import * as family from './views/family.js';
+import * as closing from './views/closing.js';
 
-const VIEWS = { speakers, status };
+const VIEWS = { speakers, status, family, closing };
+const LAST = VIEW_ORDER.at(-1).id;
 
 const stage = document.getElementById('stage');
 const callout = document.getElementById('callout');
@@ -44,7 +47,8 @@ const byId = new Map(languages.map((l) => [l.id, l]));
 
 // Discoveries are computed once from the data; each belongs to one view.
 const DISCOVERIES = {
-  status: sameCountDifferentLabel(languages),
+  status: closerToAnotherLabel(languages),
+  family: isolates(languages),
 };
 
 function view(id) {
@@ -116,6 +120,8 @@ function showView(id) {
   const first = state.view === null;
   state.view = id;
   hideDiscovery();
+  // Reaching the ending finishes the guided walk.
+  if (id === LAST) stepper.unlock();
   stepper.sync(VIEWS[id].question);
 
   const change = () => VIEWS[id].layout(stage, languages, els);
@@ -127,8 +133,11 @@ function showView(id) {
 
   // Without a tracked language the page stays where the reader left it and only the names move.
   // With one, the page scrolls with it, more slowly, so the eye can follow it to its new place.
-  const followEl = state.tracked ? els.get(state.tracked) : null;
-  const duration = followEl ? 1.3 : 0.85;
+  // The ending always brings its closing lines into view.
+  const ending = id === LAST;
+  const followEl = state.tracked && !ending ? els.get(state.tracked) : null;
+  const landAt = ending ? () => stage.getBoundingClientRect().top + window.scrollY - 16 : null;
+  const duration = followEl || ending ? 1.3 : 0.85;
   holdHeight();
   transition(
     names,
@@ -137,10 +146,10 @@ function showView(id) {
       releaseHeight();
       if (state.view === id) showDiscovery(id);
     },
-    { duration, followEl, maxScroll: settledMaxScroll },
+    { duration, followEl, landAt, maxScroll: settledMaxScroll },
   );
   if (!prefersReducedMotion()) {
-    gsap.from(stage.querySelectorAll('.band__head, .group__head, .country__name'), {
+    gsap.from(stage.querySelectorAll('.band__head, .group__head, .country__name, .solo__family, .closing'), {
       opacity: 0,
       duration: 0.4,
       delay: duration * 0.55,

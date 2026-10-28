@@ -1,5 +1,5 @@
 import { STATUSES } from '../config.js';
-import { full } from '../format.js';
+import { speakerRange, languagesLabel } from '../format.js';
 
 // Placeholder question copy; to be confirmed.
 export const question = 'How endangered is each one?';
@@ -13,10 +13,6 @@ export function layout(stage, langs, els) {
 
   for (const status of ORDER) {
     const members = langs.filter((l) => l.status === status);
-    const speakers = members.map((l) => l.speakers);
-    const min = Math.min(...speakers);
-    const max = Math.max(...speakers);
-
     const section = document.createElement('section');
     section.className = 'group';
     const headingId = `status-${status.toLowerCase().replace(/\s+/g, '-')}`;
@@ -24,7 +20,7 @@ export function layout(stage, langs, els) {
     section.innerHTML = `
       <header class="group__head">
         <h2 class="group__title" id="${headingId}">${status}</h2>
-        <p class="group__meta">${members.length} languages · ${min === max ? full(min) : `${full(min)}–${full(max)}`} speakers</p>
+        <p class="group__meta">${languagesLabel(members.length)} · ${speakerRange(members)}</p>
       </header>`;
 
     const countries = [...new Set(members.map((l) => l.country))].sort((a, b) => a.localeCompare(b));

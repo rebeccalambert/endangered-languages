@@ -16,3 +16,13 @@ export const speakersLabel = (n) => (n === 1 ? '1 speaker' : `${full(n)} speaker
 // Coordinates as recorded (JSON already drops trailing zeros), with hemisphere.
 export const coord = (lat, lon) =>
   `${Math.abs(lat)}° ${lat < 0 ? 'S' : 'N'}, ${Math.abs(lon)}° ${lon < 0 ? 'W' : 'E'}`;
+
+// "0–3,500,000 speakers", or "0 speakers" when every member has the same count.
+export function speakerRange(members) {
+  const counts = members.map((l) => l.speakers);
+  const min = Math.min(...counts);
+  const max = Math.max(...counts);
+  return min === max ? `${full(min)} speakers` : `${full(min)}–${full(max)} speakers`;
+}
+
+export const languagesLabel = (n) => (n === 1 ? '1 language' : `${n} languages`);

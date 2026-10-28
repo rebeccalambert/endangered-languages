@@ -26,9 +26,10 @@ function anchorFor(el) {
 // Moves the same elements into a new arrangement.
 // Safe to call mid-flight: positions are captured where the names are on screen right now,
 // the previous animation is killed, and the new one starts from there.
-// With `followEl`, the page scrolls in step with the move so that element stays in view;
-// `maxScroll()` is read after the new layout is in place.
-export function transition(targets, change, onSettle, { duration = 0.85, followEl = null, maxScroll } = {}) {
+// With `followEl`, the page scrolls in step with the move so that element stays in view.
+// With `landAt()`, it scrolls to that page position instead (read after the new layout is in place).
+// `maxScroll()` is also read after the new layout is in place.
+export function transition(targets, change, onSettle, { duration = 0.85, followEl = null, landAt, maxScroll } = {}) {
   const id = ++seq;
   const settle = () => {
     if (id === seq) onSettle?.();
@@ -43,10 +44,12 @@ export function transition(targets, change, onSettle, { duration = 0.85, followE
   change();
 
   let scrollTo = null;
-  if (followEl) {
-    const docTop = followEl.getBoundingClientRect().top + window.scrollY;
-    scrollTo = Math.min(Math.max(0, docTop - anchor), maxScroll?.() ?? Infinity);
+  if (landAt) {
+    scrollTo = landAt();
+  } else if (followEl) {
+    scrollTo = followEl.getBoundingClientRect().top + window.scrollY - anchor;
   }
+  if (scrollTo !== null) scrollTo = Math.min(Math.max(0, scrollTo), maxScroll?.() ?? Infinity);
 
   if (reduceMotion.matches) {
     if (scrollTo !== null) window.scrollTo(0, scrollTo);

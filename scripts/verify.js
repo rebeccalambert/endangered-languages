@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { prepare } from '../src/prepare.js';
 import { BANDS, STATUSES } from '../src/config.js';
 import { compact } from '../src/format.js';
-import { sameCountDifferentLabel } from '../src/discoveries.js';
+import { closerToAnotherLabel, isolates, closing } from '../src/discoveries.js';
 
 const raw = JSON.parse(readFileSync(new URL('../dataset/endangered-languages.json', import.meta.url)));
 const langs = prepare(raw);
@@ -35,11 +35,12 @@ line('Critically Endangered, combined', fmt(crit.reduce((t, l) => t + l.speakers
 console.log('\n— Rooms & places bands');
 for (const b of BANDS) line(`≤ ${b.max === Infinity ? '∞' : fmt(b.max)}  ${b.title}`, langs.filter((l) => l.band === b.id).length);
 
-console.log('\n— Discovery 1: same count, different label');
-const at500 = langs.filter((l) => l.speakers === 500);
-for (const l of at500) line(`  ${l.name}`, `${l.status} · band ${l.band}`);
-
-line('Discovery 1 line (as shown)', sameCountDifferentLabel(langs).text);
+console.log('\n— Status: closer to another label (log-scale medians)');
+const outliers = closerToAnotherLabel(langs);
+for (const [s, n] of Object.entries(outliers.typical)) line(`  typical ${s}`, n.toLocaleString('en-US'));
+const byId = new Map(langs.map((l) => [l.id, l]));
+line('Flagged', outliers.ids.map((id) => byId.get(id).name).join(', '));
+line('Callout (as shown)', outliers.text);
 
 console.log('\n— Discovery 2: isolates');
 const iso = langs.filter((l) => l.isolate);
@@ -47,6 +48,13 @@ const isoCritSev = iso.filter((l) => ['Critically Endangered', 'Severely Endange
 line('Isolates', iso.length);
 line('…Critically or Severely Endangered', isoCritSev.length);
 line('…with exactly 1 speaker', iso.filter((l) => l.speakers === 1).map((l) => l.name).join(', '));
+
+line('Callout (as shown)', isolates(langs).text);
+
+console.log('\n— Closing');
+const end = closing(langs);
+line('Lead (as shown)', end.lead);
+line('Last line', end.last);
 
 console.log('\n— Totals');
 const total = langs.reduce((t, l) => t + l.speakers, 0);
