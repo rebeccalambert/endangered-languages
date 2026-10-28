@@ -2,7 +2,6 @@ import { BANDS } from '../config.js';
 import { ICONS } from '../icons.js';
 import { full } from '../format.js';
 
-// Placeholder question copy; to be confirmed.
 export const question = 'How many people speak each one?';
 
 // The human-scale part of each title is the point of this view, so it carries the accent:

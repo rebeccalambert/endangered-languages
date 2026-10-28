@@ -1,6 +1,5 @@
 import { speakerRange, languagesLabel } from '../format.js';
 
-// Placeholder question copy; to be confirmed.
 export const question = 'Which languages are related?';
 
 const bySpeakers = (a, b) => a.speakers - b.speakers;
@@ -59,7 +58,6 @@ export function layout(stage, langs, els) {
     el.append(flow);
     frag.append(el);
   }
-  // Placeholder section titles; to be confirmed.
   frag.append(soloSection('Only one from its family in this collection', single.sort(bySpeakers), els));
   // Compared like a family: same heading details, names only on each row.
   const isolates = langs.filter((l) => l.isolate).sort(bySpeakers);

@@ -1,7 +1,6 @@
 // Single place for copy and tunable constants.
 
-// Placeholder title; final title is decided at the end.
-export const TITLE = 'What the Number Cannot Hold';
+export const TITLE = "What the Number Doesn't Say";
 
 // "Rooms & places" bands for the Speakers view. `max` is inclusive.
 // "About the size of…" capacities are editorial comparisons, not data.
@@ -30,6 +29,6 @@ export const VIEW_ORDER = [
   { id: 'speakers', label: 'Speakers' },
   { id: 'status', label: 'Status' },
   { id: 'family', label: 'Family' },
-  // The ending. Reaching it unlocks the strip as tabs. Placeholder label; to be confirmed.
+  // The ending. Reaching it unlocks the strip as tabs.
   { id: 'closing', label: 'Closing' },
 ];

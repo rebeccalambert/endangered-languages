@@ -57,8 +57,9 @@ line('Family callout (as shown)', kin.text);
 
 console.log('\n— Closing');
 const end = closing(langs);
+for (const r of end.recap) line(`Recap · ${r.view}`, r.text);
 line('Lead (as shown)', end.lead);
-line('Last line', end.last);
+line('Emphasis', end.emphasis);
 
 console.log('\n— Totals');
 const total = langs.reduce((t, l) => t + l.speakers, 0);

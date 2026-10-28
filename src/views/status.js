@@ -2,7 +2,6 @@ import { STATUSES } from '../config.js';
 import { speakerRange, languagesLabel } from '../format.js';
 import { statusIcon } from '../icons.js';
 
-// Placeholder question copy; to be confirmed.
 export const question = 'How endangered is each one?';
 
 // Most at risk first, matching the Speakers view (fewest speakers at the top),

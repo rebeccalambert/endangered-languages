@@ -1,13 +1,7 @@
-import { STATUSES } from './config.js';
+import { BANDS, STATUSES } from './config.js';
 
 // Every discovery is computed from the records here; nothing is hardcoded.
 // Pure, so the verify script prints exactly what the page shows.
-
-const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-const word = (n) => WORDS[n] ?? String(n);
-const cap = (s) => s[0].toUpperCase() + s.slice(1);
-const list = (names) =>
-  names.length < 3 ? names.join(' and ') : `${names.slice(0, -1).join(', ')}, and ${names.at(-1)}`;
 
 function median(values) {
   const s = [...values].sort((a, b) => a - b);
@@ -80,6 +74,8 @@ export function familyStatuses(langs) {
   const isolatesMixed = new Set((groups.get(ISOLATES) ?? []).map((l) => l.status)).size > 1;
   return {
     ids,
+    families,
+    mixed,
     text:
       `Bars show each language's status. ${mixed} of ${families} families here have members with different statuses` +
       `${isolatesMixed ? ", and the isolates aren't all one status either" : ''}. ` +
@@ -89,18 +85,25 @@ export function familyStatuses(langs) {
 
 const ISOLATES = Symbol('isolates');
 
-// Closing: languages with no living speakers, and whether anything in their family is still spoken here.
+// Closing: one line back to each view, then what they add up to.
 export function closing(langs) {
-  const silent = langs.filter((l) => l.speakers === 0);
-  const hasLivingKin = (s) =>
-    !s.isolate && langs.some((l) => l.language_family === s.language_family && l.speakers > 0);
-  const withKin = silent.filter(hasLivingKin);
-  const alone = silent.filter((s) => !hasLivingKin(s));
+  const living = langs.filter((l) => l.speakers > 0);
+  const bus = BANDS.find((b) => b.id === 'bus');
+  const onABus = living.filter((l) => l.speakers <= bus.max).length;
+  const outliers = closerToAnotherLabel(langs).ids.length;
+  const kin = familyStatuses(langs);
   return {
-    lead:
-      `${cap(word(silent.length))} languages here have fallen silent. ` +
-      `${cap(word(withKin.length))} still have relatives that people speak today. ` +
-      `${cap(word(alone.length))} have none in this collection: ${list(alone.map((l) => l.name))}.`,
-    last: 'Every number here counts people who can still talk to each other.',
+    recap: [
+      { view: 'Speakers', text: `${onABus} living languages have few enough speakers to fit on a bus.` },
+      {
+        view: 'Status',
+        text: `${outliers} of ${living.length} have a speaker count closer to another label's typical number than to their own.`,
+      },
+      { view: 'Family', text: `${kin.mixed} of ${kin.families} families have members with different statuses.` },
+    ],
+    // The data shows the label isn't set by count alone; it doesn't say what else sets it, so neither does this.
+    lead: 'How endangered a language is depends on more than how many people speak it. The number is only part of the story.',
+    // The phrase in the lead that carries the accent.
+    emphasis: 'depends on more',
   };
 }

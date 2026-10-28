@@ -1,17 +1,27 @@
 import { closing } from '../discoveries.js';
 
-// Placeholder question copy; to be confirmed.
-export const question = 'What do the numbers hold?';
+export const question = 'What do the numbers say?';
 
-// The ending: the closing lines, then every name together with no grouping at all.
+// The ending: one line back to each view, the conclusion, then every name together with no grouping.
 export function layout(stage, langs, els) {
-  const { lead, last } = closing(langs);
+  const { recap, lead, emphasis } = closing(langs);
 
   const words = document.createElement('section');
   words.className = 'closing';
-  words.innerHTML = '<p class="closing__lead"></p><p class="closing__last"></p>';
-  words.querySelector('.closing__lead').textContent = lead;
-  words.querySelector('.closing__last').textContent = last;
+  words.innerHTML = '<dl class="closing__recap"></dl><p class="closing__lead"></p>';
+  for (const { view, text } of recap) {
+    const row = document.createElement('div');
+    row.className = 'closing__point';
+    row.innerHTML = '<dt></dt><dd></dd>';
+    row.querySelector('dt').textContent = view;
+    row.querySelector('dd').textContent = text;
+    words.querySelector('.closing__recap').append(row);
+  }
+  const [before, after] = lead.split(emphasis);
+  const accent = document.createElement('span');
+  accent.className = 'closing__emphasis';
+  accent.textContent = emphasis;
+  words.querySelector('.closing__lead').append(before, accent, after);
 
   const all = document.createElement('section');
   all.className = 'group';
