@@ -13,7 +13,8 @@ import { compact } from './format.js';
 import { openPanel, closePanel } from './panel.js';
 import { createStepper } from './stepper.js';
 import { transition, prefersReducedMotion } from './transition.js';
-import { closerToAnotherLabel, isolates } from './discoveries.js';
+import { closerToAnotherLabel, familyStatuses } from './discoveries.js';
+import { statusIcon } from './icons.js';
 import * as speakers from './views/speakers.js';
 import * as status from './views/status.js';
 import * as family from './views/family.js';
@@ -36,7 +37,8 @@ const els = new Map(
     btn.id = lang.id;
     btn.dataset.id = lang.id;
     btn.classList.toggle('is-extinct', lang.speakers === 0);
-    btn.innerHTML = '<span class="name__label"></span><span class="name__count"></span>';
+    // The Family view shows the status bars in place of the count (see .stage[data-view]).
+    btn.innerHTML = `<span class="name__label"></span><span class="name__count"></span><span class="name__status">${statusIcon(lang.status, { labelled: true })}</span>`;
     btn.querySelector('.name__label').textContent = lang.name;
     btn.querySelector('.name__count').textContent = compact(lang.speakers);
     return [lang.id, btn];
@@ -48,7 +50,7 @@ const byId = new Map(languages.map((l) => [l.id, l]));
 // Discoveries are computed once from the data; each belongs to one view.
 const DISCOVERIES = {
   status: closerToAnotherLabel(languages),
-  family: isolates(languages),
+  family: familyStatuses(languages),
 };
 
 function view(id) {
@@ -57,6 +59,8 @@ function view(id) {
   els.get(id).classList.add('is-viewing');
   openPanel(byId.get(id), {
     tracked: state.tracked === id,
+    // In the Status view, a highlighted name explains which label its count is closer to.
+    note: state.view === 'status' ? DISCOVERIES.status.notes[id] : undefined,
     onTrack: () => {
       setTracked(state.tracked === id ? null : id);
       closePanel();
@@ -76,7 +80,9 @@ function setTracked(id) {
 }
 
 function hideDiscovery() {
+  // Clear any half-finished slide so the next one starts clean.
   gsap.killTweensOf(callout);
+  gsap.set(callout, { clearProps: 'transform' });
   callout.hidden = true;
   names.forEach((el) => el.classList.remove('is-discovery'));
 }
@@ -87,7 +93,8 @@ function showDiscovery(view) {
   d.ids.forEach((id) => els.get(id).classList.add('is-discovery'));
   callout.querySelector('.callout__text').textContent = d.text;
   callout.hidden = false;
-  if (!prefersReducedMotion()) gsap.from(callout, { y: 16, opacity: 0, duration: 0.4, ease: 'power2.out' });
+  // Slides up without fading, so it is always fully opaque and readable.
+  if (!prefersReducedMotion()) gsap.fromTo(callout, { y: 16 }, { y: 0, duration: 0.4, ease: 'power2.out' });
 }
 
 // Views have different heights. The stage is held at its old height while names move,
@@ -124,7 +131,10 @@ function showView(id) {
   if (id === LAST) stepper.unlock();
   stepper.sync(VIEWS[id].question);
 
-  const change = () => VIEWS[id].layout(stage, languages, els);
+  const change = () => {
+    stage.dataset.view = id;
+    VIEWS[id].layout(stage, languages, els);
+  };
 
   if (first) {
     change();

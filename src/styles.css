@@ -66,15 +66,35 @@ body {
   color: var(--ink-soft);
 }
 
-/* Speakers view: one section per room band. Status view: one per status. */
+/* One section per band, status, or family. */
 .group,
 .band {
-  padding: 28px 0 20px;
+  padding: 16px 0 20px;
   border-top: 1px solid var(--rule);
+}
+
+/* Section headers stick to the top while their section is on screen, so a reader always knows which
+   group a name is in. The next section's header pushes the current one away. Names scroll, and fly
+   during transitions, underneath. */
+.group__head,
+.band__head {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 1;
+  padding: 12px 0 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 0 var(--rule);
 }
 
 .group__head {
   margin-bottom: 4px;
+}
+
+/* Status headers carry their signal-bar icon, laid out like the Speakers bands. */
+.group__head--icon {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .band__head {
@@ -89,6 +109,12 @@ body {
   flex: none;
   width: 30px;
   height: 30px;
+}
+
+/* Speakers: the room and its icon carry the accent. */
+.band__head .icon,
+.band__place {
+  color: var(--rust);
 }
 
 .group__title,
@@ -200,6 +226,28 @@ body {
   color: var(--ink-soft);
 }
 
+/* Status bars stand in for the count in the Family view. */
+.name__status {
+  display: none;
+  margin-left: 0.3em;
+  color: var(--ink-soft);
+}
+
+.name__status .icon {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.stage[data-view='family'] .name__count {
+  display: none;
+}
+
+.stage[data-view='family'] .name__status {
+  display: inline-flex;
+  align-self: center;
+}
+
+.name.is-discovery .name__status,
 .name.is-discovery .name__label,
 .name.is-discovery .name__count {
   color: var(--rust);
@@ -209,8 +257,10 @@ body {
    distinct from a discovery's rust highlight. */
 .name.is-viewing .name__label,
 .name.is-viewing .name__count,
+.name.is-viewing .name__status,
 .name.is-tracked .name__label,
-.name.is-tracked .name__count {
+.name.is-tracked .name__count,
+.name.is-tracked .name__status {
   color: var(--rust);
 }
 
@@ -250,6 +300,7 @@ body {
   background: none;
 }
 
+.name.is-extinct.is-discovery .name__label,
 .name.is-extinct.is-viewing .name__label,
 .name.is-extinct.is-tracked .name__label {
   color: var(--rust);
@@ -321,6 +372,17 @@ body {
   font-family: var(--serif);
   font-style: italic;
   color: var(--ink-soft);
+}
+
+.panel__note {
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--rust);
+  border-radius: 4px;
+  background: #fbf8f2;
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  line-height: 1.4;
 }
 
 .panel__fields {

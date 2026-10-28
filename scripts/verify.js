@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { prepare } from '../src/prepare.js';
 import { BANDS, STATUSES } from '../src/config.js';
 import { compact } from '../src/format.js';
-import { closerToAnotherLabel, isolates, closing } from '../src/discoveries.js';
+import { closerToAnotherLabel, familyStatuses, closing } from '../src/discoveries.js';
 
 const raw = JSON.parse(readFileSync(new URL('../dataset/endangered-languages.json', import.meta.url)));
 const langs = prepare(raw);
@@ -39,7 +39,8 @@ console.log('\n— Status: closer to another label (log-scale medians)');
 const outliers = closerToAnotherLabel(langs);
 for (const [s, n] of Object.entries(outliers.typical)) line(`  typical ${s}`, n.toLocaleString('en-US'));
 const byId = new Map(langs.map((l) => [l.id, l]));
-line('Flagged', outliers.ids.map((id) => byId.get(id).name).join(', '));
+line('Flagged', outliers.ids.length);
+for (const id of outliers.ids) console.log(`  ${outliers.notes[id]}`);
 line('Callout (as shown)', outliers.text);
 
 console.log('\n— Discovery 2: isolates');
@@ -49,7 +50,10 @@ line('Isolates', iso.length);
 line('…Critically or Severely Endangered', isoCritSev.length);
 line('…with exactly 1 speaker', iso.filter((l) => l.speakers === 1).map((l) => l.name).join(', '));
 
-line('Callout (as shown)', isolates(langs).text);
+const kin = familyStatuses(langs);
+line('Family rust (least common status)', kin.ids.length);
+line('  names', kin.ids.map((id) => byId.get(id).name).join(', '));
+line('Family callout (as shown)', kin.text);
 
 console.log('\n— Closing');
 const end = closing(langs);

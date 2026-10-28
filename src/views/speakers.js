@@ -5,6 +5,14 @@ import { full } from '../format.js';
 // Placeholder question copy; to be confirmed.
 export const question = 'How many people speak each one?';
 
+// The human-scale part of each title is the point of this view, so it carries the accent:
+// "About the size of <a dinner table>", or the whole title for the first two bands.
+const LEAD = 'About the size of ';
+const titleHtml = (title) =>
+  title.startsWith(LEAD)
+    ? `${LEAD}<span class="band__place">${title.slice(LEAD.length)}</span>`
+    : `<span class="band__place">${title}</span>`;
+
 function rangeText(band, i) {
   const min = i === 0 ? 0 : BANDS[i - 1].max + 1;
   if (band.max === min) return band.max === 1 ? '1 speaker' : `${full(band.max)} speakers`;
@@ -28,7 +36,7 @@ export function layout(stage, langs, els) {
       <header class="band__head">
         ${ICONS[band.id]}
         <div>
-          <h2 class="band__title" id="band-${band.id}">${band.title}</h2>
+          <h2 class="band__title" id="band-${band.id}">${titleHtml(band.title)}</h2>
           <p class="band__meta">${rangeText(band, i)} · ${members.length} ${members.length === 1 ? 'language' : 'languages'}</p>
         </div>
       </header>

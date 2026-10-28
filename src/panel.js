@@ -17,13 +17,15 @@ function row(label, value) {
 
 // `tracked`: whether this language is the one being followed through the views.
 // `onTrack`: toggles tracking. `onClosed`: runs once the panel has closed, however it was closed.
-export function openPanel(lang, { tracked, onTrack, onClosed }) {
+// `note`: optional context from the current view, shown above the fields.
+export function openPanel(lang, { tracked, onTrack, onClosed, note }) {
   const band = BANDS.find((b) => b.id === lang.band);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
   body.innerHTML = `
     <h2 class="panel__name${lang.speakers === 0 ? ' is-extinct' : ''}" id="panel-title">${esc(lang.name)}</h2>
     <p class="panel__room">${band.title}</p>
+    ${note ? `<p class="panel__note">${esc(note)}</p>` : ''}
     <dl class="panel__fields">
       ${row('Speakers', full(lang.speakers))}
       ${row('Status', esc(lang.status))}

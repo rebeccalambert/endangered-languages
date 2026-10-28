@@ -1,5 +1,6 @@
 import { STATUSES } from '../config.js';
 import { speakerRange, languagesLabel } from '../format.js';
+import { statusIcon } from '../icons.js';
 
 // Placeholder question copy; to be confirmed.
 export const question = 'How endangered is each one?';
@@ -18,9 +19,12 @@ export function layout(stage, langs, els) {
     const headingId = `status-${status.toLowerCase().replace(/\s+/g, '-')}`;
     section.setAttribute('aria-labelledby', headingId);
     section.innerHTML = `
-      <header class="group__head">
-        <h2 class="group__title" id="${headingId}">${status}</h2>
-        <p class="group__meta">${languagesLabel(members.length)} · ${speakerRange(members)}</p>
+      <header class="group__head group__head--icon">
+        ${statusIcon(status)}
+        <div>
+          <h2 class="group__title" id="${headingId}">${status}</h2>
+          <p class="group__meta">${languagesLabel(members.length)} · ${speakerRange(members)}</p>
+        </div>
       </header>`;
 
     const countries = [...new Set(members.map((l) => l.country))].sort((a, b) => a.localeCompare(b));

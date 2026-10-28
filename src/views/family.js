@@ -17,17 +17,21 @@ function section(title, meta) {
   return el;
 }
 
-// One row per language, with its recorded family beside it: these never flow together.
-function soloSection(title, members, els) {
-  const el = section(title, languagesLabel(members.length));
+// One row per language so these never flow together. `showFamily` adds the recorded family beside each name.
+function soloSection(title, members, els, { showFamily = true, showRange = false } = {}) {
+  const meta = languagesLabel(members.length) + (showRange ? ` · ${speakerRange(members)}` : '');
+  const el = section(title, meta);
   el.classList.add('group--solo');
   for (const lang of members) {
     const row = document.createElement('div');
     row.className = 'solo';
-    const family = document.createElement('span');
-    family.className = 'solo__family';
-    family.textContent = lang.language_family;
-    row.append(els.get(lang.id), family);
+    row.append(els.get(lang.id));
+    if (showFamily) {
+      const family = document.createElement('span');
+      family.className = 'solo__family';
+      family.textContent = lang.language_family;
+      row.append(family);
+    }
     el.append(row);
   }
   return el;
@@ -57,7 +61,9 @@ export function layout(stage, langs, els) {
   }
   // Placeholder section titles; to be confirmed.
   frag.append(soloSection('Only one from its family in this collection', single.sort(bySpeakers), els));
-  frag.append(soloSection('Classed as isolates', langs.filter((l) => l.isolate).sort(bySpeakers), els));
+  // Compared like a family: same heading details, names only on each row.
+  const isolates = langs.filter((l) => l.isolate).sort(bySpeakers);
+  frag.append(soloSection('Classed as isolates', isolates, els, { showFamily: false, showRange: true }));
 
   stage.replaceChildren(frag);
 }
