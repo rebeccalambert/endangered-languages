@@ -600,9 +600,9 @@ button.stepper__item {
   position: fixed;
   left: max(12px, env(safe-area-inset-left));
   right: max(12px, env(safe-area-inset-right));
-  /* Sits just above the stepper, pinned the same way. */
-  top: calc(100svh - var(--stepper-h) - 8px);
-  translate: 0 -100%;
+  /* Sits just above the stepper, pinned the same way. Positioned with bottom, not translate:
+     GSAP takes over the translate property when it slides the callout in. 100% is the viewport height. */
+  bottom: calc(100% - 100svh + var(--stepper-h) + 8px);
   z-index: 9;
   display: flex;
   align-items: flex-start;
