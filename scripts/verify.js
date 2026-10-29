@@ -43,7 +43,7 @@ line('Flagged', outliers.ids.length);
 for (const id of outliers.ids) console.log(`  ${outliers.notes[id]}`);
 line('Callout (as shown)', outliers.text);
 
-console.log('\n— Discovery 2: isolates');
+console.log('\n— Isolates');
 const iso = langs.filter((l) => l.isolate);
 const isoCritSev = iso.filter((l) => ['Critically Endangered', 'Severely Endangered'].includes(l.status));
 line('Isolates', iso.length);

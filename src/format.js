@@ -11,8 +11,6 @@ const trim = (x) => String(Math.round(x * 10) / 10);
 
 export const full = (n) => n.toLocaleString('en-US');
 
-export const speakersLabel = (n) => (n === 1 ? '1 speaker' : `${full(n)} speakers`);
-
 // Coordinates as recorded (JSON already drops trailing zeros), with hemisphere.
 export const coord = (lat, lon) =>
   `${Math.abs(lat)}° ${lat < 0 ? 'S' : 'N'}, ${Math.abs(lon)}° ${lon < 0 ? 'W' : 'E'}`;

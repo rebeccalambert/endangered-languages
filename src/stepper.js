@@ -87,8 +87,5 @@ export function createStepper({ order, isBuilt, onGo }) {
       save();
       renderStrip();
     },
-    get index() {
-      return index;
-    },
   };
 }

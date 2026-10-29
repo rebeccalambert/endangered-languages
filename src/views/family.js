@@ -20,7 +20,6 @@ function section(title, meta) {
 function soloSection(title, members, els, { showFamily = true, showRange = false } = {}) {
   const meta = languagesLabel(members.length) + (showRange ? ` · ${speakerRange(members)}` : '');
   const el = section(title, meta);
-  el.classList.add('group--solo');
   for (const lang of members) {
     const row = document.createElement('div');
     row.className = 'solo';

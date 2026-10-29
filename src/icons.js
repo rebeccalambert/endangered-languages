@@ -42,7 +42,7 @@ function bars(filled, label) {
     })
     .join('');
   const a11y = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true" focusable="false"';
-  return `<svg class="icon icon--status" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" ${a11y}>${body}</svg>`;
+  return `<svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" ${a11y}>${body}</svg>`;
 }
 
 // Decorative next to a visible status title; labelled when it stands in for the status on its own.
