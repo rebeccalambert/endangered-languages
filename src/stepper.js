@@ -64,9 +64,10 @@ export function createStepper({ order, onGo }) {
   }
 
   // Keep page padding and the callout clear of the stepper as its height changes.
+  // Border box, so safe-area padding counts too (it grows when iOS Safari hides its toolbar).
   new ResizeObserver(() => {
     document.documentElement.style.setProperty('--stepper-h', `${nav.offsetHeight}px`);
-  }).observe(nav);
+  }).observe(nav, { box: 'border-box' });
 
   prev.addEventListener('click', () => go(index - 1));
   next.addEventListener('click', () => go(index + 1));

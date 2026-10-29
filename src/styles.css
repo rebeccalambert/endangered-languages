@@ -13,6 +13,8 @@
 
   --gutter: 20px;
   --stepper-h: 104px; /* Updated from the stepper's measured height. */
+  /* How far the stepper sits above the screen edge: the height iOS Safari's toolbar had (0 on desktop). */
+  --toolbar-gap: calc(100lvh - 100svh);
   --measure: 40rem;
 }
 
@@ -30,7 +32,7 @@ html {
 
 body {
   margin: 0;
-  padding-bottom: var(--stepper-h);
+  padding-bottom: calc(var(--stepper-h) + var(--toolbar-gap));
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
@@ -343,7 +345,9 @@ body {
   max-height: 70vh;
   max-height: 70dvh;
   margin: 0;
-  padding: 28px max(var(--gutter), env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  /* The sheet still meets the screen edge, but its content stops above the area iOS Safari paints over
+     when its toolbar is hidden (see .stepper), so the Track button stays visible. */
+  padding: 28px max(var(--gutter), env(safe-area-inset-right)) calc(max(28px, env(safe-area-inset-bottom) - var(--toolbar-gap)) + var(--toolbar-gap)) max(var(--gutter), env(safe-area-inset-left));
   overflow-y: auto;
   border: 0;
   border-radius: 16px 16px 0 0;
@@ -461,17 +465,33 @@ body {
   }
 }
 
-/* Bottom stepper: guided walk, then tabs. */
+/* Bottom stepper: guided walk, then tabs.
+   Pinned to the small viewport (Safari's toolbars showing), not the screen edge: when iOS Safari hides its
+   toolbar it keeps painting over that area, which hid the question and arrows. */
 .stepper {
   position: fixed;
-  inset: auto 0 0 0;
+  top: 100svh;
+  right: 0;
+  left: 0;
+  translate: 0 -100%;
   z-index: 10;
-  padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  /* The home-bar inset only matters when the stepper actually reaches the screen edge. */
+  padding: 8px max(12px, env(safe-area-inset-right)) max(8px, calc(env(safe-area-inset-bottom) - var(--toolbar-gap))) max(12px, env(safe-area-inset-left));
   border-top: 1px solid var(--rule);
-  background: rgba(245, 239, 228, 0.94);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  /* Solid, not translucent: iOS 26 Safari fades see-through content at the bottom edge. */
+  background: var(--paper);
   font-family: var(--sans);
+}
+
+/* Covers the gap between the stepper and the screen edge (none on desktop). */
+.stepper::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: var(--toolbar-gap);
+  background: inherit;
 }
 
 .stepper__strip {
@@ -580,7 +600,9 @@ button.stepper__item {
   position: fixed;
   left: max(12px, env(safe-area-inset-left));
   right: max(12px, env(safe-area-inset-right));
-  bottom: calc(var(--stepper-h) + 8px);
+  /* Sits just above the stepper, pinned the same way. */
+  top: calc(100svh - var(--stepper-h) - 8px);
+  translate: 0 -100%;
   z-index: 9;
   display: flex;
   align-items: flex-start;
