@@ -1,10 +1,9 @@
-// Only the Latin subsets: they cover every name in the dataset, including ǂ and |.
+// Only the subsets the text needs. These files set no unicode-range, so each one downloads on load.
+// Latin Extended is for the names, which are serif (the ǂ in Tuu (ǂKhomani)); italic and sans text is basic Latin.
 import '@fontsource/noto-serif/latin-400.css';
 import '@fontsource/noto-serif/latin-ext-400.css';
 import '@fontsource/noto-serif/latin-400-italic.css';
-import '@fontsource/noto-serif/latin-ext-400-italic.css';
 import '@fontsource/noto-sans/latin-400.css';
-import '@fontsource/noto-sans/latin-ext-400.css';
 import './styles.css';
 import { gsap } from 'gsap';
 import { TITLE, VIEW_ORDER } from './config.js';
@@ -34,7 +33,6 @@ const els = new Map(
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'name';
-    btn.id = lang.id;
     btn.dataset.id = lang.id;
     btn.classList.toggle('is-extinct', lang.speakers === 0);
     // The Family view shows the status bars in place of the count (see .stage[data-view]).
@@ -169,7 +167,6 @@ function showView(id) {
 
 const stepper = createStepper({
   order: VIEW_ORDER,
-  isBuilt: (id) => id in VIEWS,
   onGo: showView,
 });
 

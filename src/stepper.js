@@ -16,7 +16,7 @@ const save = () => {
   }
 };
 
-export function createStepper({ order, isBuilt, onGo }) {
+export function createStepper({ order, onGo }) {
   const nav = document.getElementById('stepper');
   const strip = nav.querySelector('.stepper__strip');
   const question = nav.querySelector('.stepper__question');
@@ -36,7 +36,6 @@ export function createStepper({ order, isBuilt, onGo }) {
         item.textContent = v.label;
         if (unlocked) {
           item.type = 'button';
-          item.disabled = !isBuilt(v.id);
           item.addEventListener('click', () => go(i));
         }
         li.append(item);
@@ -49,7 +48,7 @@ export function createStepper({ order, isBuilt, onGo }) {
   function sync(questionText) {
     question.textContent = questionText;
     prev.disabled = index === 0;
-    next.disabled = index === order.length - 1 || !isBuilt(order[index + 1].id);
+    next.disabled = index === order.length - 1;
     strip.querySelectorAll('.stepper__item').forEach((el, i) => {
       el.classList.toggle('is-current', i === index);
       el.classList.toggle('is-past', i < index);
@@ -59,7 +58,7 @@ export function createStepper({ order, isBuilt, onGo }) {
   }
 
   function go(i) {
-    if (i < 0 || i >= order.length || !isBuilt(order[i].id)) return;
+    if (i < 0 || i >= order.length) return;
     index = i;
     onGo(order[i].id);
   }

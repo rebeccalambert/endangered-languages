@@ -1,13 +1,9 @@
 // Prints every number the page or README relies on, computed from the JSON.
 // Run: npm run verify
-import { readFileSync } from 'node:fs';
-import { prepare } from '../src/prepare.js';
+import { languages as langs } from '../src/data.js';
 import { BANDS, STATUSES } from '../src/config.js';
 import { compact } from '../src/format.js';
 import { closerToAnotherLabel, familyStatuses, closing } from '../src/discoveries.js';
-
-const raw = JSON.parse(readFileSync(new URL('../dataset/endangered-languages.json', import.meta.url)));
-const langs = prepare(raw);
 
 const count = (arr, key) =>
   arr.reduce((m, x) => m.set(x[key], (m.get(x[key]) ?? 0) + 1), new Map());
@@ -22,15 +18,13 @@ line('Records', langs.length);
 line('Records missing a field', missing.length);
 line('Families', count(langs, 'language_family').size);
 line('Countries', count(langs, 'country').size);
-line('United States records', langs.filter((l) => l.country === 'United States').length);
+line('Records by region', [...count(langs, 'region')].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${r} ${n}`).join(', '));
 
 console.log('\n— Status');
 for (const s of STATUSES) {
   const sp = langs.filter((l) => l.status === s).map((l) => l.speakers);
   line(s, `${sp.length}  (speakers ${fmt(Math.min(...sp))}–${fmt(Math.max(...sp))})`);
 }
-const crit = langs.filter((l) => l.status === 'Critically Endangered');
-line('Critically Endangered, combined', fmt(crit.reduce((t, l) => t + l.speakers, 0)));
 
 console.log('\n— Rooms & places bands');
 for (const b of BANDS) line(`≤ ${b.max === Infinity ? '∞' : fmt(b.max)}  ${b.title}`, langs.filter((l) => l.band === b.id).length);
@@ -43,11 +37,9 @@ line('Flagged', outliers.ids.length);
 for (const id of outliers.ids) console.log(`  ${outliers.notes[id]}`);
 line('Callout (as shown)', outliers.text);
 
-console.log('\n— Isolates');
+console.log('\n— Family');
 const iso = langs.filter((l) => l.isolate);
-const isoCritSev = iso.filter((l) => ['Critically Endangered', 'Severely Endangered'].includes(l.status));
 line('Isolates', iso.length);
-line('…Critically or Severely Endangered', isoCritSev.length);
 line('…with exactly 1 speaker', iso.filter((l) => l.speakers === 1).map((l) => l.name).join(', '));
 
 const kin = familyStatuses(langs);
@@ -60,14 +52,6 @@ const end = closing(langs);
 for (const r of end.recap) line(`Recap · ${r.view}`, r.text);
 line('Lead (as shown)', end.lead);
 line('Emphasis', end.emphasis);
-
-console.log('\n— Totals');
-const total = langs.reduce((t, l) => t + l.speakers, 0);
-const sorted = [...langs].sort((a, b) => a.speakers - b.speakers);
-const median = (sorted[51].speakers + sorted[52].speakers) / 2;
-line('All speakers, combined', fmt(total));
-line('Median speakers', fmt(median));
-line('100 or fewer speakers', langs.filter((l) => l.speakers <= 100).length);
 
 console.log('\n— Compact counts (5K, 7 mil) lose no precision');
 const unpack = (s) => (s.endsWith(' mil') ? parseFloat(s) * 1e6 : s.endsWith('K') ? parseFloat(s) * 1e3 : Number(s));

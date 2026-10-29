@@ -1,10 +1,10 @@
 import { gsap } from 'gsap';
 import { BANDS } from './config.js';
 import { full, coord } from './format.js';
+import { prefersReducedMotion } from './transition.js';
 
 const dialog = document.getElementById('panel');
 const body = dialog.querySelector('.panel__body');
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = window.matchMedia('(min-width: 768px)');
 let onClose = null;
 
@@ -43,7 +43,7 @@ export function openPanel(lang, { tracked, onTrack, onClosed, note }) {
   const wasOpen = dialog.open;
   if (!wasOpen) dialog.showModal();
   gsap.killTweensOf(dialog);
-  if (reduceMotion.matches || wasOpen) {
+  if (prefersReducedMotion() || wasOpen) {
     gsap.set(dialog, { xPercent: 0, yPercent: 0 });
   } else {
     gsap.fromTo(dialog, offscreen(), { xPercent: 0, yPercent: 0, duration: 0.45, ease: 'power3.out' });
@@ -62,7 +62,7 @@ function finishClose() {
 export function closePanel() {
   if (!dialog.open) return;
   gsap.killTweensOf(dialog);
-  if (reduceMotion.matches) return finishClose();
+  if (prefersReducedMotion()) return finishClose();
   gsap.to(dialog, { ...offscreen(), duration: 0.3, ease: 'power2.in', onComplete: finishClose });
 }
 dialog.querySelector('.panel__close').addEventListener('click', closePanel);

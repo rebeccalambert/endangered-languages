@@ -46,6 +46,9 @@ export function closerToAnotherLabel(langs) {
   };
 }
 
+// Key for the isolates group, so it can't clash with a recorded family name.
+const ISOLATES = Symbol('isolates');
+
 // Family: whether relatives share a status. The isolates are compared as one group too.
 // Rust goes to each group's least common status; when every status appears equally often, that's all of them.
 export function familyStatuses(langs) {
@@ -82,8 +85,6 @@ export function familyStatuses(langs) {
       `Rust marks each family's least common status.`,
   };
 }
-
-const ISOLATES = Symbol('isolates');
 
 // Closing: one line back to each view, then what they add up to.
 export function closing(langs) {

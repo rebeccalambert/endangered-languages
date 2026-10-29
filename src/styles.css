@@ -90,7 +90,8 @@ body {
   margin-bottom: 4px;
 }
 
-/* Status headers carry their signal-bar icon, laid out like the Speakers bands. */
+/* Speakers bands and Status headers: icon beside the title. */
+.band__head,
 .group__head--icon {
   display: flex;
   align-items: flex-start;
@@ -98,9 +99,6 @@ body {
 }
 
 .band__head {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
   margin-bottom: 10px;
   color: var(--ink);
 }
@@ -438,7 +436,7 @@ body {
   border-radius: 999px;
   background: var(--rust);
   color: var(--paper);
-  font: 500 0.9375rem var(--sans);
+  font: 0.9375rem var(--sans);
   cursor: pointer;
 }
 
@@ -494,7 +492,7 @@ body {
   border-top: 2px solid var(--rule);
   background: none;
   color: var(--ink-soft);
-  font: 500 0.6875rem var(--sans);
+  font: 0.6875rem var(--sans);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: center;
@@ -512,11 +510,6 @@ body {
 button.stepper__item {
   min-height: 44px;
   cursor: pointer;
-}
-
-button.stepper__item:disabled {
-  color: var(--rule);
-  cursor: default;
 }
 
 .stepper__row {

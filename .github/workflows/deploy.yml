@@ -28,7 +28,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Fail the deploy if any figure stops matching the JSON.
+      # Stops the deploy if a record is missing a field, a shortened count would round, or a figure fails to compute.
       - run: npm run verify
       - run: npm run build
       - uses: actions/configure-pages@v6
